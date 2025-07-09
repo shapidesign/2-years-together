@@ -523,28 +523,106 @@ if (folderData.type === 'single') {
             overflow-y: auto;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .tree-panel {
-                width: 150px;
-            }
-            
-            .photo-grid.grid-4x4,
-            .photo-grid.grid-5x4 {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
+       /* Responsive adjustments */
+@media (max-width: 768px) {
+    .tree-panel {
+        width: 150px;
+    }
+    
+    .photo-grid.grid-4x4,
+    .photo-grid.grid-5x4,
+    .photo-grid.grid-5x5 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .title-bar-text {
+        font-size: 14px;
+    }
+    
+    .menu-item {
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+}
 
-        @media (max-width: 600px) {
-            .tree-panel {
-                width: 120px;
-            }
-            
-            .photo-grid.grid-3x3,
-            .photo-grid.grid-4x3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+@media (max-width: 600px) {
+    .tree-panel {
+        width: 100px;
+    }
+    
+    .main-content {
+        margin-left: 100px;
+        width: calc(100% - 100px);
+    }
+    
+    .photo-grid.grid-3x3,
+    .photo-grid.grid-4x3,
+    .photo-grid.grid-4x4,
+    .photo-grid.grid-5x4,
+    .photo-grid.grid-5x5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .photo-grid.grid-2x2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .title-bar-text {
+        font-size: 12px;
+    }
+    
+    .menu-item {
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+    
+    .toolbar-button {
+        width: 24px;
+        height: 22px;
+        font-size: 14px;
+    }
+    
+    .address-bar {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .tree-panel {
+        width: 80px;
+    }
+    
+    .main-content {
+        margin-left: 80px;
+        width: calc(100% - 80px);
+    }
+    
+    .photo-grid.grid-3x3,
+    .photo-grid.grid-4x3,
+    .photo-grid.grid-4x4,
+    .photo-grid.grid-5x4,
+    .photo-grid.grid-5x5,
+    .photo-grid.grid-2x2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .tree-item {
+        font-size: 12px;
+    }
+    
+    .tree-item div:last-child {
+        display: none; /* Hide folder names on very small screens */
+    }
+    
+    .title-bar-text {
+        font-size: 10px;
+    }
+    
+    .photo-item {
+        min-height: 100px;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -1189,10 +1267,10 @@ if (folderData.type === 'single') {
     modalBody.innerHTML = `
  <div style="text-align: center; padding: 20px; position: relative;">
     <!-- Left Arrow Button -->
-    <div onclick="navigatePhoto(-1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; z-index: 10; user-select: none;">‹</div>
-    
-    <!-- Right Arrow Button -->
-    <div onclick="navigatePhoto(1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; z-index: 10; user-select: none;">›</div>
+<div onclick="navigatePhoto(-1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; z-index: 10; user-select: none; touch-action: manipulation;">‹</div>
+
+<!-- Right Arrow Button -->
+<div onclick="navigatePhoto(1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; z-index: 10; user-select: none; touch-action: manipulation;">›</div>
     
     <img src="images/${filename}" alt="${filename}" style="max-width: 100%; max-height: 400px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
  <div style="display: none; font-size: 64px; margin-bottom: 16px;">${icon}</div>
@@ -1258,6 +1336,41 @@ function updateModalContent(filename, icon) {
     //   </div>
     // `;
 }
+
+    // Touch swipe support for mobile
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', function(event) {
+    const modal = document.getElementById('photo-modal');
+    if (modal.style.display === 'block') {
+        touchStartX = event.changedTouches[0].screenX;
+    }
+});
+
+document.addEventListener('touchend', function(event) {
+    const modal = document.getElementById('photo-modal');
+    if (modal.style.display === 'block') {
+        touchEndX = event.changedTouches[0].screenX;
+        handleSwipe();
+    }
+});
+
+function handleSwipe() {
+    const swipeThreshold = 50; // Minimum swipe distance
+    const swipeDistance = touchEndX - touchStartX;
+    
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+            // Swipe right - go to previous photo
+            navigatePhoto(-1);
+        } else {
+            // Swipe left - go to next photo
+            navigatePhoto(1);
+        }
+    }
+}
+
 
         function closeModal() {
             document.getElementById('photo-modal').style.display = 'none';
